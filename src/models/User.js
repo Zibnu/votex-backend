@@ -31,13 +31,14 @@ module.exports = (sequelize, DataTypes) => {
             },
         },
         {
+            modelName : "User",
             tableName : "users",
             timestamps : true,
             paranoid : true,
         },
     );
     User.associate = (models) => {
-        //for relasi table
+        User.hasOne(models.Vote, {foreignKey : "user_id", as : "vote"});
     };
     return User;
 }

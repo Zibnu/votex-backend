@@ -29,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
             },
         },
         {
+            modelName : "Candidate",
             tableName : "candidates",
             timestamps : true,
             paranoid : true,
@@ -36,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     Candidate.associate = (models) => {
-        // for relasi
+        Candidate.hasMany(models.Vote, {foreignKey : "candidate_id", as : "votes"});
     };
     return Candidate;
 };
