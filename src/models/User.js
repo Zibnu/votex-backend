@@ -23,11 +23,17 @@ module.exports = (sequelize, DataTypes) => {
                 type : DataTypes.UUID,
                 defaultValue : DataTypes.UUIDV4,
                 allowNull : false,
+                unique : true,
             },
             role : {
                 type : DataTypes.ENUM("user", "admin"),
                 allowNull : false,
                 defaultValue : "user",
+            },
+            has_voted : {
+                type : DataTypes.BOOLEAN,
+                allowNull : false,
+                defaultValue : false,
             },
         },
         {
