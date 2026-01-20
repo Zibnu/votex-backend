@@ -5,6 +5,7 @@ const userController = require("../controllers/userController");
 const uploadExcel = require("../middleware/uploadExcel");
 
 router.post("/import", authenticate, isAdmin, uploadExcel.single("file"), userController.importUsers);
+router.get("/export", authenticate, isAdmin, userController.exportsUsers);
 
 
 module.exports = router;

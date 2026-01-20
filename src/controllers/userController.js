@@ -45,7 +45,7 @@ exports.importUsers = async (req, res) => {
 };
 
 // export user to excel
-exports.module = async ( req, res ) => {
+exports.exportsUsers = async ( req, res ) => {
     try {
         const users = await User.findAll({
             attributes : ["username", "nisn", "password", "role", "has_voted"],
@@ -60,7 +60,24 @@ exports.module = async ( req, res ) => {
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook,worksheet, "Users")
+
+        const fileName = `user_votex_${Date.now()}.xlsx`;
+        const filePath = path.join(__dirname, "../../uploads/excel", fileName);
+
+        XLSX.writeFile(workbook, filePath);
+
+        return res.download(filePath, fileName, () => {
+            fs.unlinkSync(filePath);
+        });
     } catch (error) {
-        
-    }
-}
+        console.error("Export Users ERROR", error);
+        return res.status(500).json({
+            success : false,
+            message : "Internal Server Error",
+            error : error.message,
+        });
+    };
+};
+
