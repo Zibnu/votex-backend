@@ -1,14 +1,19 @@
 const express = require("express");
 const app = express();
+const path = require("path")
 require("dotenv").config();
 
 const sequelize = require("./src/config/db");
 app.use(express.json({}));
+app.use(express.urlencoded({ extended : true}));
+app.use("/uploads", express.static(path.join(__dirname, "uploads/excel")));
 
-const authRouter = require("./src/routes/authRoutes");
+const authRouter = require("./src/routes/authRouter");
+const userRouter = require("./src/routes/userRouter");
 
 
 app.use("/api/auth", authRouter);
+app.use("/api/users", userRouter);
 
 // (async () => {
 //   try {

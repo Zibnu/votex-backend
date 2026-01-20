@@ -2,9 +2,58 @@ const jwt = require("jsonwebtoken");
 const { User } = require("../models");
 
 const SECRET = process.env.SECRET_KEYS;
-const EXPIRES_IN = "4h";
+const EXPIRES_IN = "7d";// ubah menjadi 2h ketika sudah selesai pembuatan
 
-exports.login = async (req, res) => {
+//🔥🔥
+exports.register = async ( req, res ) => {
+    try {
+        const { username, nisn} = req.body;
+
+        if(!username || !nisn) {
+            return res.status(400).json({
+                success : false,
+                message : "username and nisn required"
+            });
+        }
+
+        const existingUser = await User.findOne({ where : { nisn }});
+        if(existingUser) {
+            return res.status(409).json({
+                success : false,
+                message : "User already Exists",
+            });
+        }
+
+        const newUser = await User.create({
+            username,
+            nisn,
+        });
+
+        const userResponse = {
+            id_user : newUser.id_user,
+            username : newUser.username,
+            nisn : newUser.nisn,
+            password : newUser.password,
+            role : newUser.role,
+        };
+
+        return res.status(201).json({
+            success : true,
+            message : "Register Success",
+            data : userResponse,
+        });
+    } catch (error) {
+        console.error("Regiter ERROR", error);
+        return res.status(500).json({
+            success : false,
+            message : "Internal Server ERROR",
+            error : error.message,
+        });
+    };
+};
+
+// 🔥🔥
+exports.login = async (req, res ) => {
     try {
         const { nisn, password } = req.body;
 
@@ -15,7 +64,7 @@ exports.login = async (req, res) => {
             });
         }
 
-        const user = await User.findOne({ where : nisn});
+        const user = await User.findOne({ where : {nisn}});
 
         if(!user) {
             return res.status(404).json({
