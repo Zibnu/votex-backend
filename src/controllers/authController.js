@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { User } = require("../models");
+const bcrypt = require("bcrypt");
 
 const SECRET = process.env.SECRET_KEYS;
 const EXPIRES_IN = "7d";// ubah menjadi 2h ketika sudah selesai pembuatan
@@ -73,7 +74,9 @@ exports.login = async (req, res ) => {
             });
         }
 
-        if(user.password !== password) {
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if(!isMatch) {
             return res.status(401).json({
                 success : false,
                 message : "Wrong Password",

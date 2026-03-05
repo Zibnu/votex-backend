@@ -2,8 +2,10 @@ const { User } = require("../models");
 const XLSX = require("xlsx");
 const path = require("path");
 const fs = require("fs");
+const bcrypt = require("bcrypt");
+const generatePassword = require("../utils/passwordGenerator");
 
-// import user from excel
+// import user from excel 🔥🔥
 exports.importUsers = async (req, res) => {
     try {
         if(!req.file) {
@@ -14,25 +16,52 @@ exports.importUsers = async (req, res) => {
         }
 
         const filePath = req.file.path;
+
         const workbook = XLSX.readFile(filePath);
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const data = XLSX.utils.sheet_to_json(worksheet);
 
         // Format Column Excel = name | nisn
-        const users = data.map((row) => ({
-            username : row.username,
-            nisn : row.nisn,
-        }));
+        const users = [];
+        const exportData = [];
+
+        for (const row of data) {
+            const plainPassword = generatePassword(8);
+
+            const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+            users.push({
+                username : row.username,
+                nisn : row.nisn,
+                password : hashedPassword,
+            });
+
+            // data untuk export excel
+            exportData.push({
+                username : row.username,
+                nisn : row.nisn,
+                password : plainPassword,
+            });
+        }
 
         await User.bulkCreate(users, { ignoreDuplicates : true});
 
         fs.unlinkSync(filePath); // delete file after processing
 
-        return res.status(201).json({
-            success : true,
-            message : "Import User Berhasil",
-            total : users.length,
+        // create excell password
+        const worksheetExport = XLSX.utils.json_to_sheet(exportData);
+        const workbookExport = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(workbookExport, worksheetExport, "Users");
+
+        const fileName = `users_votex_${Date.now()}.xlsx`;
+        const exportPath = path.join(__dirname, "../../uploads/excel", fileName);
+
+        XLSX.writeFile(workbookExport, exportPath);
+
+        return res.download(exportPath, fileName, () => {
+            fs.unlinkSync(exportPath);
         });
     } catch (error) {
         console.error("Import User false", error);
@@ -44,17 +73,16 @@ exports.importUsers = async (req, res) => {
     }
 };
 
-// export user to excel
+// export user to excel ✔️✨
 exports.exportsUsers = async ( req, res ) => {
     try {
         const users = await User.findAll({
-            attributes : ["username", "nisn", "password", "role", "has_voted"],
+            attributes : ["username", "nisn", "role", "has_voted"],
         });
 
         const data = users.map((user) => ({
             Name : user.username,
             NISN : user.nisn,
-            Password : user.password,
             role : user.role,
             hasVoted : user.has_voted ? "Yes" : "No",
         }));
@@ -81,3 +109,48 @@ exports.exportsUsers = async ( req, res ) => {
     };
 };
 
+// get all data voting status ✨✨
+exports.getVotingStatus = async (req, res) => {
+    try {
+        const total = await User.count();
+        const voted = await User.count({where : {has_voted : true}});
+        const notVoted = await User.count({where : {has_voted : false}});
+
+        return res.status(200).json({
+            success : true,
+            total_users : total,
+            voted,
+            not_voted : notVoted,
+        });
+    } catch (error) {
+        console.error("getVotingStatus ERROR", error);
+        return res.status(500).json({
+            success : false,
+            message : "Internal Server ERROR",
+            error : error.message,
+        });
+    }
+};
+
+// get data user not vote 🔥✨
+exports.getUserNotVoted = async ( req, res ) => {
+    try {
+        const users = await User.findAll({
+            where : { has_voted : false },
+            attributes : ["id_user", "username", "nisn"],
+        });
+
+        return res.status(200).json({
+            success : true,
+            total : users.length,
+            data : users,
+        });
+    } catch (error) {
+        console.error("Get User Not Voted ERROR", error);
+        return res.status(500).json({
+            success : false,
+            message : "Internal Server ERROR",
+            error : error.message,
+        });
+    }
+};
