@@ -80,14 +80,14 @@ exports.exportsUsers = async ( req, res ) => {
             attributes : ["username", "nisn", "role", "has_voted"],
         });
 
-        const data = users.map((user) => ({
+        const exportData = users.map((user) => ({
             Name : user.username,
             NISN : user.nisn,
             role : user.role,
             hasVoted : user.has_voted ? "Yes" : "No",
         }));
 
-        const worksheet = XLSX.utils.json_to_sheet(data);
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook,worksheet, "Users")
 

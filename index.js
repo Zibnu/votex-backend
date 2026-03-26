@@ -10,10 +10,12 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads/excel")));
 
 const authRouter = require("./src/routes/authRouter");
 const userRouter = require("./src/routes/userRouter");
+const voteRouter = require("./src/routes/voteRouter");
 
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
+app.use("/api/vote", voteRouter);
 
 // (async () => {
 //   try {
@@ -25,7 +27,7 @@ app.use("/api/users", userRouter);
 // })();
 
 app.get("/", (req, res) => {
-  res.json({ message: Welcome });
+  res.json({ message: "Welcome" });
 });
 
 const PORT = process.env.PORT;
