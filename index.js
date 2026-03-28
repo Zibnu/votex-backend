@@ -17,11 +17,13 @@ const authRouter = require("./src/routes/authRouter");
 const userRouter = require("./src/routes/userRouter");
 const voteRouter = require("./src/routes/voteRouter");
 const candidateRouter = require("./src/routes/candidateRouter");
+const settingRouter = require("./src/routes/settingRouter");
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/vote", voteRouter);
 app.use("/api/candidate", candidateRouter);
+app.use("/api/setting", settingRouter);
 
 // (async () => {
 //   try {

@@ -78,6 +78,15 @@ exports.updateCandidate = async (req, res) => {
         const candidate = await Candidate.findByPk(id);
 
         if(!candidate) {
+
+            if(req.file) {
+                const filePath = path.join("uploads/image", req.file.filename);
+
+                if(fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            };
+
             return res.status(404).json({
                 success : false,
                 message : "Candidate Not Found",
