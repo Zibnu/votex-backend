@@ -1,11 +1,12 @@
 const { Vote, User, Setting, sequelize } = require("../models");
-
+// ✨✨
 exports.getSetting = async (req, res) => {
     try {
         const setting = await Setting.findOne();
 
         return res.status(200).json({
             success : true,
+            message : `Get Setting Info Success`,
             data : setting,
         });
     } catch (error) {
@@ -17,7 +18,7 @@ exports.getSetting = async (req, res) => {
         });
     }
 };
-
+// ✨✨
 exports.toogleVoting = async (req, res) => {
     try {
         let setting = await Setting.findOne();
