@@ -113,8 +113,18 @@ exports.exportsUsers = async ( req, res ) => {
 exports.getVotingStatus = async (req, res) => {
     try {
         const total = await User.count();
-        const voted = await User.count({where : {has_voted : true}});
-        const notVoted = await User.count({where : {has_voted : false}});
+        const voted = await User.count({
+            where : {
+                has_voted : true,
+                role : "user"
+            }
+        });
+        const notVoted = await User.count({
+            where : {
+                has_voted : false,
+                role : "user"
+            }
+        });
 
         return res.status(200).json({
             success : true,
@@ -136,7 +146,7 @@ exports.getVotingStatus = async (req, res) => {
 exports.getUserNotVoted = async ( req, res ) => {
     try {
         const users = await User.findAll({
-            where : { has_voted : false },
+            where : { has_voted : false , role : "user"},
             attributes : ["id_user", "username", "nisn"],
         });
 
