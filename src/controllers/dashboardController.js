@@ -17,7 +17,7 @@ exports.dashboard = async (req, res) => {
         const percentage = totalUser === 0 ? 0 : ((totalVoted / totalUser) * 100 ).toFixed(2);
 
         const votesRaw = await Vote.findAll({
-            attibutes : [
+            attributes : [
                 "candidate_id",
                 [sequelize.fn("COUNT", sequelize.col("candidate_id")), "total_votes"]
             ],
@@ -25,7 +25,7 @@ exports.dashboard = async (req, res) => {
         });
 
         const candidates = await Candidate.findAll({
-            attibutes : ["id_candidate", "ketua_name", "wakil_name"],
+            attributes : ["id_candidate", "ketua_name", "wakil_name"],
         });
 
         const votesPerCandidate = candidates.map((candidate) => {
