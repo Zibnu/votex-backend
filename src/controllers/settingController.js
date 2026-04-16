@@ -64,9 +64,7 @@ exports.resetVoting = async (req, res) => {
 
         await Vote.destroy({
             where : {},
-            truncate : true,
-            restartIdentity : true,
-            cascade : true,
+            force : true,
             transaction,
         });
 
