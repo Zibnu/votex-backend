@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const generatePassword = require("../utils/passwordGenerator");
+const { Op } = require("sequelize");
 
 // import user from excel 🔥🔥
 exports.importUsers = async (req, res) => {
@@ -212,3 +213,87 @@ exports.updateUser = async (req, res) => {
         })
     }
 }
+
+exports.getAllUser = async (req, res) => {
+    try {
+        const { page = 1, limit = 7,search } = req.query;
+        const offset = (parseInt(page) - 1) * parseInt(limit)
+
+        let where = {};
+
+        if(search) {
+            where = {
+                [Op.or] : [
+                    {
+                        username : {
+                            [Op.iLike] : `%${search}%`,
+                        },
+                    },
+                    {
+                        nisn : {
+                            [Op.like] : `%${search}%`
+                        }
+                    }
+                ]
+            };
+        }
+
+        const { count, rows : users} = await User.findAndCountAll({
+            where,
+            limit : parseInt(limit),
+            offset,
+            attributes : ["id_user", "username", "nisn", "role", "has_voted"],
+            order : [["createdAt", "DESC"]],
+        });
+
+        return res.status(200).json({
+            success : true,
+            message : "Get All User Success",
+            data : {
+                users,
+                pagination : {
+                    currentPage : parseInt(page),
+                    totalPages : Math.ceil( count / parseInt(limit)),
+                    totalItems : count,
+                    itemsPerPage : parseInt(limit),
+                },
+            },
+        });
+    } catch (error) {
+        console.error("Get All User Error" ,error);
+        return res.status(500).json({
+            success : false,
+            message : "Internal Server Error",
+            error : error.message,
+        });
+    }
+};
+
+exports.deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = await User.findByPk(id);
+
+        if(!user) {
+            return res.status(500).json({
+                success : false,
+                message : "User Not Found",
+            });
+        };
+
+        await user.destroy();
+
+        return res.status(200).json({
+            success : true,
+            message : "Delete User Success",
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success : false,
+            message : "Internal Server Error",
+            error : error.message,
+        });
+    }
+};

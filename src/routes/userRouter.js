@@ -9,6 +9,7 @@ router.get("/export", authenticate, isAdmin, userController.exportsUsers);
 router.get("/voteStatus", authenticate, isAdmin, userController.getVotingStatus);
 router.get("/not_voted_data", authenticate, isAdmin, userController.getUserNotVoted);
 router.patch("/user/:id", authenticate, isAdmin, userController.updateUser);
-
+router.get("/users_data", authenticate, isAdmin, userController.getAllUser);
+router.delete("/user/:id", authenticate, isAdmin, userController.deleteUser);
 
 module.exports = router;
