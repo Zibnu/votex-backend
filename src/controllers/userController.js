@@ -164,3 +164,51 @@ exports.getUserNotVoted = async ( req, res ) => {
         });
     }
 };
+
+exports.updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nisn, username} = req.body;
+
+        const user = await User.findByPk(id);
+
+        if(!user) {
+            return res.status(404).json({
+                success : false,
+                message : "User Not Found",
+            })
+        }
+
+        if(!nisn || !username) {
+            return res.status(400).json({
+                success : false,
+                message : "Your Input is Null!!",
+            });
+        };
+
+        await user.update({
+            nisn,
+            username,
+        });
+
+        const dataUser = {
+            nisn,
+            username,
+            password : user.password,
+            role : user.role,
+        };
+
+        return res.status(200).json({
+            success : true,
+            message : "Update User Success",
+            data : dataUser,
+        });
+    } catch (error) {
+        console.error( "Update User ERROR" , error);
+        return res.status(500).json({
+            success : false,
+            message : "Internal Server Error",
+            error : error.message,
+        })
+    }
+}

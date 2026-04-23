@@ -8,6 +8,7 @@ router.post("/import", authenticate, isAdmin, uploadExcel.single("file"), userCo
 router.get("/export", authenticate, isAdmin, userController.exportsUsers);
 router.get("/voteStatus", authenticate, isAdmin, userController.getVotingStatus);
 router.get("/not_voted_data", authenticate, isAdmin, userController.getUserNotVoted);
+router.patch("/user/:id", authenticate, isAdmin, userController.updateUser);
 
 
 module.exports = router;
