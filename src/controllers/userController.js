@@ -1,10 +1,10 @@
-const { User } = require("../models");
+const { User, Setting, sequelize } = require("../models");
 const XLSX = require("xlsx");
 const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const generatePassword = require("../utils/passwordGenerator");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 
 // import user from excel 🔥🔥
 exports.importUsers = async (req, res) => {
@@ -270,25 +270,48 @@ exports.getAllUser = async (req, res) => {
 };
 
 exports.deleteUser = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
-        const user = await User.findByPk(id);
+        const setting = await Setting.findOne({
+            transaction,
+            lock : transaction.LOCK.UPDATE,
+        });
+
+        if(setting.is_setting_open) {
+            await transaction.rollback();
+            return res.status(403).json({
+                success : false,
+                message : "Sistem Voting is Open, Please Close Voting For Delete User!!",
+            });
+        }
+
+        const user = await User.findByPk(id, 
+            {transaction},
+        );
 
         if(!user) {
-            return res.status(500).json({
+            await transaction.rollback()
+            return res.status(404).json({
                 success : false,
                 message : "User Not Found",
             });
         };
 
-        await user.destroy();
+        await user.destroy({transaction});
+
+        await transaction.commit();
 
         return res.status(200).json({
             success : true,
             message : "Delete User Success",
         });
     } catch (error) {
+        if(!transaction.finished) {
+            await transaction.rollback();
+        }
+
         console.error(error);
         return res.status(500).json({
             success : false,
@@ -297,3 +320,47 @@ exports.deleteUser = async (req, res) => {
         });
     }
 };
+
+exports.deleteAllUser = async (req, res) => {
+    const transaction = await sequelize.transaction();
+    try {
+
+        const setting = await Setting.findOne({
+            transaction,
+            lock : transaction.LOCK.UPDATE,
+        });
+
+        if(setting.is_setting_open) {
+            await transaction.rollback();
+            return res.status(403).json({
+                success : false,
+                message : "System Voting Is Open, Please Close For Delete All User!!",
+            });
+        }
+        
+        const deletedCount = await User.destroy({
+            where : {
+                role : "user", // for delete acount user not admin account
+            },
+            transaction,
+        });
+
+        await transaction.commit();
+
+        return res.status(200).json({
+            success : true,
+            message : `Delete ${deletedCount} user success`,
+        });
+    } catch (error) {
+        if(!transaction.finished) {
+            await transaction.rollback();
+        }
+
+        console.error(error);
+        return res.status(500).json({
+            success : false,
+            message : "Internal Server Error",
+            error : error.message,
+        });
+    }
+}

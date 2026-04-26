@@ -11,5 +11,6 @@ router.get("/not_voted_data", authenticate, isAdmin, userController.getUserNotVo
 router.patch("/user/:id", authenticate, isAdmin, userController.updateUser);
 router.get("/users_data", authenticate, isAdmin, userController.getAllUser);
 router.delete("/user/:id", authenticate, isAdmin, userController.deleteUser);
+router.delete("/delete_all", authenticate, isAdmin, userController.deleteAllUser);
 
 module.exports = router;
