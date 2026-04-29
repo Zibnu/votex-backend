@@ -243,7 +243,7 @@ exports.getAllUser = async (req, res) => {
             limit : parseInt(limit),
             offset,
             attributes : ["id_user", "username", "nisn", "role", "has_voted"],
-            order : [["createdAt", "DESC"]],
+            order : [["id_user", "ASC"]],
         });
 
         return res.status(200).json({

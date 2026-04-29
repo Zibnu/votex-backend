@@ -53,6 +53,7 @@ exports.getAllCandidate = async (req, res) => {
     try {
         const candidate = await Candidate.findAll({
             attributes : ["id_candidate", "ketua_name", "wakil_name", "visi", "misi", "image"],
+            order : [["id_candidate", "ASC"]],
         });
 
         return res.status(200).json({
