@@ -1,4 +1,4 @@
-const { Candidate } = require("../models");
+const { Candidate, Setting, sequelize } = require("../models");
 const fs = require("fs");
 const path = require("path");
 
@@ -132,12 +132,27 @@ exports.updateCandidate = async (req, res) => {
 
 // ✨✨
 exports.deleteCandidate = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
-        const candidate = await Candidate.findByPk(id);
+        const setting = await Setting.findOne({
+            transaction,
+            lock : transaction.LOCK.UPDATE,
+        });
+
+        if(setting.is_setting_open) {
+            await transaction.rollback();
+            return res.status(403).json({
+                success : false,
+                message : "System Voting Is Open, Please Close Voting For Delete Candidate",
+            });
+        }
+
+        const candidate = await Candidate.findByPk(id, {transaction});
 
         if(!candidate) {
+            await transaction.rollback();
             return res.status(404).json({
                 success : false,
                 message : "Candidate Not Found",
@@ -146,17 +161,24 @@ exports.deleteCandidate = async (req, res) => {
 
         const imagePath = path.join("uploads/image", path.basename(candidate.image));
 
+        await candidate.destroy({transaction});
+
+        await transaction.commit();
+
         if(fs.existsSync(imagePath)) {
             fs.unlinkSync(imagePath);
         };
 
-        await candidate.destroy();
 
         return res.status(200).json({
             success : true,
             message : "Delete Candidate Success",
         });
     } catch (error) {
+        if(!transaction.finished) {
+            await transaction.rollback();
+        }
+
         console.error("Delete Candidate ERROR", error);
         return res.status(500).json({
             success : false,

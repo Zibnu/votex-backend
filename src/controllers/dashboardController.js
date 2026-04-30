@@ -26,6 +26,7 @@ exports.dashboard = async (req, res) => {
 
         const candidates = await Candidate.findAll({
             attributes : ["id_candidate", "ketua_name", "wakil_name"],
+            order : [["id_candidate", "ASC"]]
         });
 
         const votesPerCandidate = candidates.map((candidate) => {
