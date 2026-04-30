@@ -1,4 +1,4 @@
-const { User, Setting, sequelize } = require("../models");
+const { User, Setting, sequelize, Vote } = require("../models");
 const XLSX = require("xlsx");
 const path = require("path");
 const fs = require("fs");
@@ -287,6 +287,19 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
+        const vote = await Vote.findOne({
+            where : { user_id : id},
+            transaction,
+        });
+
+        if(vote) {
+            await transaction.rollback();
+            return res.status(400).json({
+                success : false,
+                message : "If the user has vote data, please reset the voting first",
+            });
+        }
+
         const user = await User.findByPk(id, 
             {transaction},
         );
@@ -299,7 +312,10 @@ exports.deleteUser = async (req, res) => {
             });
         };
 
-        await user.destroy({transaction});
+        await user.destroy({
+            force : true,
+            transaction,
+        });
 
         await transaction.commit();
 
@@ -337,11 +353,22 @@ exports.deleteAllUser = async (req, res) => {
                 message : "System Voting Is Open, Please Close For Delete All User!!",
             });
         }
-        
+
+        const voteCount = await Vote.count({ transaction });
+
+        if(voteCount > 0) {
+            await transaction.rollback();
+            return res.status(400).json({
+                success : false,
+                message : "There is still voting data, please reset the voting first!!",
+            });
+        }
+
         const deletedCount = await User.destroy({
             where : {
                 role : "user", // for delete acount user not admin account
             },
+            force : true,
             transaction,
         });
 
