@@ -23,6 +23,31 @@ exports.importUsers = async (req, res) => {
         const worksheet = workbook.Sheets[sheetName];
         const data = XLSX.utils.sheet_to_json(worksheet);
 
+        if(!data || data.length === 0) {
+            fs.unlinkSync(filePath);
+            return res.status(400).json({
+                success : false,
+                message : "No data in your file!!!"
+            })
+        }
+
+        const nisnList = data.map(row => row.nisn);
+        const existingUsers = await User.findAll({
+            where : {
+                nisn : nisnList,
+            },
+            attributes : ["nisn"],
+        });
+        const existingNisn = existingUsers.map(user => user.nisn)
+        const duplicateNisn = data.filter(row => existingNisn.includes(row.nisn));
+        if(duplicateNisn.length > 0) {
+            fs.unlinkSync(filePath);
+            return res.status(400).json({
+                success : false,
+                message : "User Already Exists!!"
+            })
+        }
+
         // Format Column Excel = name | nisn
         const users = [];
         const exportData = [];
@@ -46,7 +71,7 @@ exports.importUsers = async (req, res) => {
             });
         }
 
-        await User.bulkCreate(users, { ignoreDuplicates : true});
+        await User.bulkCreate(users);
 
         fs.unlinkSync(filePath); // delete file after processing
 
