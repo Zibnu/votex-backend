@@ -42,7 +42,7 @@ exports.importUsers = async (req, res) => {
         const duplicateNisn = data.filter(row => existingNisn.includes(row.nisn));
         if(duplicateNisn.length > 0) {
             fs.unlinkSync(filePath);
-            return res.status(400).json({
+            return res.status(409).json({
                 success : false,
                 message : "User Already Exists!!"
             })
