@@ -29,6 +29,25 @@ exports.importUsers = async (req, res) => {
                 success : false,
                 message : "No data in your file!!!"
             })
+        };
+
+        const nisnMap = {};
+        const duplicateInFile = [];
+
+        for (const row of data) {
+            if(nisnMap[row.nisn]) {
+                duplicateInFile.push(row.nisn);
+            } else {
+                nisnMap[row.nisn] = true;
+            }
+        }
+
+        if(duplicateInFile.length > 0) {
+            fs.unlinkSync(filePath);
+            return res.status(422).json({
+                success : false,
+                message : "There is a duplicate NISN in the file",
+            })
         }
 
         const nisnList = data.map(row => row.nisn);
@@ -336,6 +355,15 @@ exports.deleteUser = async (req, res) => {
                 message : "User Not Found",
             });
         };
+
+        // for the admin cannot delete their own account 
+        if(user.role === "admin") {
+            await transaction.rollback();
+            return res.status(403).json({
+                success : false,
+                message : "Account Admin not allowed to delete",
+            });
+        }
 
         await user.destroy({
             force : true,
