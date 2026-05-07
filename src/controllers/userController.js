@@ -283,7 +283,9 @@ exports.getAllUser = async (req, res) => {
         }
 
         const { count, rows : users} = await User.findAndCountAll({
-            where,
+            where : {
+                role : "user"
+            },
             limit : parseInt(limit),
             offset,
             attributes : ["id_user", "username", "nisn", "role", "has_voted"],
