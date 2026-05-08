@@ -1,4 +1,4 @@
-const { Candidate, Setting, sequelize } = require("../models");
+const { Candidate, Setting, sequelize, Vote } = require("../models");
 const fs = require("fs");
 const path = require("path");
 
@@ -147,6 +147,16 @@ exports.deleteCandidate = async (req, res) => {
                 success : false,
                 message : "System Voting Is Open, Please Close Voting For Delete Candidate",
             });
+        }
+
+        const voteCount = await Vote.count({ transaction })
+
+        if(voteCount > 0 ) {
+            await transaction.rollback();
+            return res.status(400).json({
+                success : false,
+                message : "There is still voting data, please reset the voting first!!"
+            })
         }
 
         const candidate = await Candidate.findByPk(id, {transaction});
