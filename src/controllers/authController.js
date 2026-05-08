@@ -25,11 +25,11 @@ exports.register = async ( req, res ) => {
             });
         }
 
-        console.log(password);
+        // console.log(password);
         
         const hashPw = await bcrypt.hash(password, 10);
 
-        console.log(hashPw);
+        // console.log(hashPw);
         const newUser = await User.create({
             username,
             nisn,
