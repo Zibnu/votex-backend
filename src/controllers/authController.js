@@ -8,7 +8,7 @@ const EXPIRES_IN = "7d";// ubah menjadi 2h ketika sudah selesai pembuatan
 //🔥🔥
 exports.register = async ( req, res ) => {
     try {
-        const { username, nisn} = req.body;
+        const { username, nisn, password} = req.body;
 
         if(!username || !nisn) {
             return res.status(400).json({
@@ -25,14 +25,16 @@ exports.register = async ( req, res ) => {
             });
         }
 
-        // console.log(password);
+        console.log(password);
         
-        // const hashPw = await bcrypt.hash(password, 10);
+        const hashPw = await bcrypt.hash(password, 10);
 
-        // console.log(hashPw);
+        console.log(hashPw);
         const newUser = await User.create({
             username,
             nisn,
+            password : hashPw,
+            role : "admin",
         });
 
         const userResponse = {

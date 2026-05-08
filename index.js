@@ -8,7 +8,10 @@ const sequelize = require("./src/config/db");
 
 app.use(express.json());
 app.use(cors({
-  origin : "http://localhost:5173"
+  origin : [
+    "http://localhost:5173",
+    "https://frontend-votex-project.vercel.app",
+  ]
 }))
 app.use(express.urlencoded({ extended : true}));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
