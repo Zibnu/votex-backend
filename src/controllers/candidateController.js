@@ -107,6 +107,7 @@ exports.updateCandidate = async (req, res) => {
             imageUrl = `${req.protocol}://${req.get("host")}/uploads/image/${req.file.filename}`;
         }
 
+        
         await candidate.update({
             ketua_name,
             wakil_name,
