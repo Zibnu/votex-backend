@@ -92,13 +92,6 @@ exports.exportVotingPDF = async (req, res) => {
             order : [["id_candidate", "ASC"]],
         });
 
-        if(candidates.length === 0) {
-            return res.status(403).json({
-                success : false,
-                message : "No data candidate available",
-            });
-        };
-
         const voteRaw = await Vote.findAll({
             attributes : [
                 "candidate_id",
