@@ -92,6 +92,13 @@ exports.exportVotingPDF = async (req, res) => {
             order : [["id_candidate", "ASC"]],
         });
 
+        if(candidates.length === 0) {
+            return res.status(404).json({
+                success : false,
+                message : "No candidate data available"
+            })
+        }
+
         const voteRaw = await Vote.findAll({
             attributes : [
                 "candidate_id",
@@ -109,6 +116,14 @@ exports.exportVotingPDF = async (req, res) => {
                 total_votes : vote ? parseInt(vote.dataValues.total_votes) : 0
             };
         });
+
+        const totalVotes = results.reduce((sum, item) => sum + item.total_votes,0);
+        if(totalVotes === 0) {
+            return res.status(400).json({
+                success : false,
+                message : "No voting data available",
+            })
+        }
 
         const winner = results.length > 0 
         ? results.reduce((prev, current) => {
