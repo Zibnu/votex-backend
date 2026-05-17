@@ -260,7 +260,7 @@ exports.updateUser = async (req, res) => {
 
 exports.getAllUser = async (req, res) => {
     try {
-        const { page = 1, limit = 7,search } = req.query;
+        const { page = 1, limit = 7,search , check_vote } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit)
 
         let where = {};
@@ -282,9 +282,16 @@ exports.getAllUser = async (req, res) => {
             };
         }
 
+        if(check_vote === "true") {
+            where.has_voted = true;
+        } else if(check_vote === "false"){
+            where.has_voted = false;
+        }
+
         const { count, rows : users} = await User.findAndCountAll({
             where : {
-                role : "user"
+                role : "user",
+                ...where,
             },
             limit : parseInt(limit),
             offset,
